@@ -1,55 +1,94 @@
-# Aegis Local 🛡️🔒
+# PyVault — Gestionnaire de mots de passe local
 
-A secure, lightweight desktop application designed to centralize and protect your credentials strictly **locally** on your machine. Nothing is ever sent to the internet; your data remains fully encrypted on your disk.
+Un gestionnaire de mots de passe qui tourne entièrement **en local** sur ta
+machine. Rien n'est envoyé sur internet, tout reste chiffré sur ton disque.
 
-## ✨ Features
+## Fonctionnalités
 
-* **Master Password Vault:** Secure your entire vault behind a single master password created on first startup (never stored in plain text, only as a cryptographic hash via PBKDF2).
-* **Browser Credentials Import (Windows):** Automatically scan and import existing login credentials from Google Chrome and Microsoft Edge (with user permission).
-* **Offline CSV Import:** Import passwords via a `.csv` file exported from any other browser (Firefox, Brave, etc.).
-* **Local Storage & Encryption:** All database entries (Website, Email, Password) are protected by robust local encryption (Fernet / AES).
-* **Intuitive Interface:**
-  * **Password Toggle:** Hide or reveal plain-text passwords using the eye icon (👁).
-  * **Quick Copy:** Copy any password directly to your clipboard with the copy icon (📋).
-  * **Inline Editing:** Double-click on any field to modify it directly.
-* **Full Management:** Manually create new entries or delete outdated records easily.
-* **Integrated Generator:** Includes a random password generator for creating new, strong credentials.
+- Création d'un **mot de passe maître** au premier lancement (jamais stocké
+  en clair, seulement une dérivation cryptographique via PBKDF2).
+- **Import automatique** des mots de passe déjà enregistrés dans Google
+  Chrome / Microsoft Edge (Windows), ou via un fichier `.csv` exporté
+  depuis n'importe quel navigateur.
+- Liste des mots de passe : site, identifiant, mot de passe masqué.
+- Bouton **œil (👁)** pour révéler/masquer un mot de passe.
+- **Double-clic** sur le site, l'identifiant ou le mot de passe pour le
+  modifier.
+- Bouton **📋** pour copier un mot de passe dans le presse-papiers.
+- Bouton **+ Ajouter** pour créer une nouvelle entrée (avec générateur de
+  mot de passe aléatoire intégré).
+- Bouton **🗑** pour supprimer une entrée.
+- Barre de recherche pour filtrer par site.
 
-## ⚠️ Security & Safety Warning
+## Installation
 
-> **DISCLAIMER:** This project is intended for educational and personal utility purposes.
->
-> * **Local Responsibility:** Your passwords are stored solely on your local disk. **If you forget your Master Password, there is no recovery mechanism.**
-> * **Source Code Integrity:** Only compile or run this application from trusted sources. Compromised dependencies or exposed encryption keys can put your credentials at risk.
+Il faut Python 3.10 ou plus récent (avec Tkinter, inclus par défaut dans
+l'installeur officiel Python sur Windows).
 
-## 🛠️ Requirements & Installation
+```bash
+pip install -r requirements.txt
+```
 
-Aegis Local requires Python 3.10 or newer (with Tkinter, which is included by default in the official Python installer on Windows).
+## Lancement
 
-1. **Install Dependencies:**
-   ```bash
-   pip install -r requirements.txt
+```bash
+python main.py
+```
 
-   Run the Application:
+Au tout premier lancement, l'application te demande de créer ton mot de
+passe maître, puis te propose d'importer tes mots de passe existants
+depuis Chrome/Edge.
 
-On the very first launch, the app will prompt you to create your master password, then offer to import existing passwords from Chrome/Edge.
+## Où sont stockées les données ?
 
-📂 Where is Data Stored?
-Everything is stored in a hidden directory inside your user home folder:
+Tout est stocké dans un dossier caché de ton profil utilisateur :
 
-~/.aegis_local/config.json → Cryptographic salt + verification token (never the master password itself).
+- `~/.pyvault/config.json` → le sel cryptographique + un jeton de
+  vérification (jamais ton mot de passe maître lui-même).
+- `~/.pyvault/vault.db` → une base SQLite contenant tes entrées, avec les
+  mots de passe **chiffrés** (Fernet / AES).
 
-~/.aegis_local/vault.db → A local SQLite database containing your entries, with passwords fully encrypted.
+Sur Windows, `~` correspond à `C:\Users\TonNom\`.
 
-On Windows, ~ corresponds to C:\Users\YourName\.
+⚠️ Si tu perds ton mot de passe maître, il n'y a **aucun moyen** de
+récupérer les mots de passe stockés (c'est volontaire, c'est ce qui rend
+le chiffrement solide). Choisis-en un dont tu te souviendras, ou note-le
+quelque part en sécurité.
 
-💡 Technical Note: Browser Auto-Import
-This feature reads the local file where Chrome/Edge store credentials and decrypts them using the Windows Data Protection API (DPAPI)—the exact same mechanism used by the browsers themselves. Everything happens strictly on your machine.
+## À propos de l'import automatique Chrome/Edge
 
-Known Limitation: Recent updates to Chrome/Edge may enforce strict process isolation, locking these database files while the browser is running. Make sure to close your browser before attempting a direct import. If automatic import fails, use the CSV Import option.
+Cette fonctionnalité lit le fichier local où Chrome/Edge stockent tes
+identifiants, et déchiffre les mots de passe via l'API de chiffrement de
+Windows (DPAPI) — exactement le même mécanisme que celui qu'utilisent les
+navigateurs eux-mêmes. Tout se passe en local, aucune donnée ne quitte ta
+machine.
 
-🤝 Contributing
-Contributions, issues, and feature requests are welcome! Feel free to check the issues page.
+**Limitation connue** : depuis 2024, les versions récentes de Chrome/Edge
+sur Windows ont ajouté une couche de protection supplémentaire ("app-bound
+encryption") qui peut empêcher cette méthode directe de fonctionner. Si
+l'import automatique échoue ou ramène 0 mot de passe, utilise le bouton
+**"Importer un CSV"** : va dans les paramètres de ton navigateur
+(`Mots de passe` → `Exporter les mots de passe`), ce qui génère un fichier
+`.csv`, puis importe-le directement dans PyVault.
 
-📄 License
-This project is licensed under the MIT License - see the LICENSE file for details.
+Pense aussi à **fermer le navigateur** avant de lancer l'import direct,
+certains fichiers pouvant être verrouillés pendant que Chrome/Edge tourne.
+
+## Structure du projet
+
+```
+password_manager/
+├── main.py             # point d'entrée
+├── gui.py               # interface graphique (Tkinter)
+├── crypto_utils.py       # mot de passe maître + chiffrement
+├── db.py                 # stockage SQLite local
+├── browser_import.py      # import Chrome / Edge / CSV
+└── requirements.txt
+```
+
+## Idées d'améliorations futures
+
+- Verrouillage automatique après un temps d'inactivité.
+- Export chiffré / sauvegarde du coffre.
+- Indicateur de force du mot de passe et détection de doublons.
+- Recherche floue (tolérance aux fautes de frappe).
