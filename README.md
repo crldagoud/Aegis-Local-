@@ -1,4 +1,4 @@
-# PyVault — Gestionnaire de mots de passe local
+# Aegis Local 🛡️🔒 — Gestionnaire de mots de passe local
 
 Un gestionnaire de mots de passe qui tourne entièrement **en local** sur ta
 machine. Rien n'est envoyé sur internet, tout reste chiffré sur ton disque.
